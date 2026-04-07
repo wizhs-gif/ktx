@@ -4,5 +4,11 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/SubWay.unity
+    guid: 43b9c9576ee2c5e47a20b36fc183cbfe
+  - enabled: 1
+    path: Assets/Scenes/XiTai.unity
+    guid: 79969f6341e97e44eb5c4c8e55ff18ad
   m_configObjects: {}
