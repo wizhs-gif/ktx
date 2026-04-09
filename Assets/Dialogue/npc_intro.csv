@@ -1,0 +1,9 @@
+speaker,content,effectOnStart,effectOnEnd,waitAfter,autoNext,eventOnDialogueEnd
+旁白,你感到极度疲惫。今天的睡觉时间大概是要提前了。,fade_in,,0,false,
+旁白,你在晨光中醒来。足足十二小时的悠长睡眠自大学时代之后就不曾有了。这种新奇的体验唤起了一些掩埋许久的思绪。,morning_light,,0,false,
+旁白,先起床比较好。,hint_pulse,,0,false,
+旁白,你开始反思。你想到自己两点一线的工作。一份并不讨厌，也谈不上喜欢的工作。它的确带来了稳定的生活和不错的收入，让今天的你有余裕思考这些东西。当年的你为工作付出的努力没有白费。,slow_vignette,,0,false,
+旁白,你想要笑一下，嘴角轻轻扬起——在形成弧度之前，又默然落下去。,camera_shake_small,,0,false,
+旁白,真的是这样吗？那为什么还会不幸福？你问曾经的自己。,darken,,0,false,
+旁白,。,silence_flash,,0.2,true,
+旁白,那时候的心境早就忘了。你在等一个永远听不到的回复。,fade_out,,0,false,open_choice_panel
