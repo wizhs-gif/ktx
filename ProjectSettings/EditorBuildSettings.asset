@@ -11,4 +11,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/XiTai.unity
     guid: 79969f6341e97e44eb5c4c8e55ff18ad
+  - enabled: 1
+    path: Assets/Scenes/DoTween.unity
+    guid: 89ff9842964366847bcb0bf84a947ab7
+  - enabled: 1
+    path: Assets/Scenes/SampleScene.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
   m_configObjects: {}
