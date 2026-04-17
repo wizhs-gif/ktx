@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 665295b595509e946ab87fc4fc9d26e0
+guid: 4a60b1ea31d5bed4ba241f0f5ec87025
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -53,7 +53,7 @@ TextureImporter:
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
-  spriteTessellationDetail: 0
+  spriteTessellationDetail: -1
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
@@ -100,39 +100,58 @@ TextureImporter:
       name: "\u672A\u547D\u540D\u4F5C\u54C1_0"
       rect:
         serializedVersion: 2
-        x: 355
-        y: 286
-        width: 1748
-        height: 1126
+        x: 85
+        y: 536
+        width: 285
+        height: 579
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 43f929e9f1a6d25459f53109964ba128
-      internalID: 421260555
+      spriteID: de5ff3e186b2ab249a2893e41e79c7bc
+      internalID: 55142805
       vertices: []
       indices: 
       edges: []
       weights: []
-    outline:
-    - - {x: -836, y: -543}
-      - {x: -839, y: 574}
-      - {x: 908, y: 577}
-      - {x: 908, y: -546}
+    - serializedVersion: 2
+      name: "\u672A\u547D\u540D\u4F5C\u54C1_2"
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 531
+        width: 297
+        height: 584
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1f0216b492182394e8d3a1351e58a304
+      internalID: -1887512989
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
-    internalID: 1537655665
+    spriteID: f788b5595c2f3dd4da8b910df860b6de
+    internalID: 0
     vertices: []
     indices: 
     edges: []
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      "\u672A\u547D\u540D\u4F5C\u54C1_0": 421260555
+      "\u672A\u547D\u540D\u4F5C\u54C1_0": 55142805
+      "\u672A\u547D\u540D\u4F5C\u54C1_1": -558124012
+      "\u672A\u547D\u540D\u4F5C\u54C1_2": -1887512989
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
