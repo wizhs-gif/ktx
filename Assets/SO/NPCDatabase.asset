@@ -12,4 +12,124 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4e85685fc30844d29bbfbc3ab84ce4e, type: 3}
   m_Name: NPCDatabase
   m_EditorClassIdentifier: 
-  npcs: []
+  npcs:
+  - id: 
+    npcName: 
+    description: 
+    portrait: {fileID: 0}
+    prefab: {fileID: 0}
+    spawnCondition:
+      requiredDay: 0
+      minDay: 0
+      maxDay: 0
+      minSanity: 0
+      maxSanity: 0
+      requiredItems: []
+      forbiddenItems: []
+      requiredFlags: []
+    dialogues: []
+  - id: 
+    npcName: 
+    description: 
+    portrait: {fileID: 0}
+    prefab: {fileID: 0}
+    spawnCondition:
+      requiredDay: 0
+      minDay: 0
+      maxDay: 0
+      minSanity: 0
+      maxSanity: 0
+      requiredItems: []
+      forbiddenItems: []
+      requiredFlags: []
+    dialogues: []
+  - id: 
+    npcName: 
+    description: 
+    portrait: {fileID: 0}
+    prefab: {fileID: 0}
+    spawnCondition:
+      requiredDay: 0
+      minDay: 0
+      maxDay: 0
+      minSanity: 0
+      maxSanity: 0
+      requiredItems: []
+      forbiddenItems: []
+      requiredFlags: []
+    dialogues: []
+  - id: 
+    npcName: 
+    description: 
+    portrait: {fileID: 0}
+    prefab: {fileID: 0}
+    spawnCondition:
+      requiredDay: 0
+      minDay: 0
+      maxDay: 0
+      minSanity: 0
+      maxSanity: 0
+      requiredItems: []
+      forbiddenItems: []
+      requiredFlags: []
+    dialogues: []
+  - id: 
+    npcName: 
+    description: 
+    portrait: {fileID: 0}
+    prefab: {fileID: 0}
+    spawnCondition:
+      requiredDay: 0
+      minDay: 0
+      maxDay: 0
+      minSanity: 0
+      maxSanity: 0
+      requiredItems: []
+      forbiddenItems: []
+      requiredFlags: []
+    dialogues: []
+  - id: 
+    npcName: 
+    description: 
+    portrait: {fileID: 0}
+    prefab: {fileID: 0}
+    spawnCondition:
+      requiredDay: 0
+      minDay: 0
+      maxDay: 0
+      minSanity: 0
+      maxSanity: 0
+      requiredItems: []
+      forbiddenItems: []
+      requiredFlags: []
+    dialogues: []
+  - id: 
+    npcName: 
+    description: 
+    portrait: {fileID: 0}
+    prefab: {fileID: 0}
+    spawnCondition:
+      requiredDay: 0
+      minDay: 0
+      maxDay: 0
+      minSanity: 0
+      maxSanity: 0
+      requiredItems: []
+      forbiddenItems: []
+      requiredFlags: []
+    dialogues: []
+  - id: 
+    npcName: 
+    description: 
+    portrait: {fileID: 0}
+    prefab: {fileID: 0}
+    spawnCondition:
+      requiredDay: 0
+      minDay: 0
+      maxDay: 0
+      minSanity: 0
+      maxSanity: 0
+      requiredItems: []
+      forbiddenItems: []
+      requiredFlags: []
+    dialogues: []
