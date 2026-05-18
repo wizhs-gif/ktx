@@ -62,7 +62,8 @@ public class TimeSelectionUI : MonoBehaviour
     {
         if (!isSelecting) return;
 
-        currentCountdown -= Time.deltaTime;
+        // 用 unscaledDeltaTime，不受 timeScale 影响（游戏暂停时倒计时继续）
+        currentCountdown -= Time.unscaledDeltaTime;
 
         if (countdownText != null)
         {

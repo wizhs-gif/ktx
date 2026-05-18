@@ -40,6 +40,31 @@ public class UIManager : MonoBehaviour
         ShowHUD();
     }
 
+    /// <summary>
+    /// 场景加载后重新绑定场景内的UI面板引用
+    /// 由 SceneController.OnSceneLoaded 自动调用
+    /// </summary>
+    public void RebindScenePanels()
+    {
+        HUDManager hud = FindObjectOfType<HUDManager>();
+        if (hud != null) hudPanel = hud.gameObject;
+
+        DialogueManager dialogue = FindObjectOfType<DialogueManager>();
+        if (dialogue != null) dialoguePanel = dialogue.gameObject;
+
+        TimeSelectionUI timeSelect = FindObjectOfType<TimeSelectionUI>();
+        if (timeSelect != null) timeSelectPanel = timeSelect.gameObject;
+
+        DayEndUI dayEnd = FindObjectOfType<DayEndUI>();
+        if (dayEnd != null) dayEndPanel = dayEnd.gameObject;
+
+        // 重新隐藏所有面板，再显示HUD
+        HideAllPanels();
+        ShowHUD();
+
+        Debug.Log("[UIManager] 场景UI面板已重新绑定");
+    }
+
     // ==================== 面板显示控制 ====================
 
     /// <summary>

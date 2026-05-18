@@ -1,0 +1,237 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5ce196d22882471491e205773788e1e, type: 3}
+  m_Name: ItemDatabase
+  m_EditorClassIdentifier: 
+  items:
+  - id: 1
+    itemName: "\u65E0\u8272\u56DE\u5FC6"
+    description: 
+    group: "\u56DE\u5FC6\u7EC4"
+    icon: {fileID: -1898149233, guid: 89b90a80c5ec1dd4dbc538b502b7ab7a, type: 3}
+    isKey: 0
+  - id: 2
+    itemName: "\u84DD\u8272\u56DE\u5FC6"
+    description: 
+    group: "\u56DE\u5FC6\u7EC4"
+    icon: {fileID: -300021830, guid: e12d0ec229084d343871d6246a197593, type: 3}
+    isKey: 0
+  - id: 3
+    itemName: "\u9752\u8272\u56DE\u5FC6"
+    description: 
+    group: "\u56DE\u5FC6\u7EC4"
+    icon: {fileID: 2121242779, guid: c68fc036202da1949bce56bcabf75a12, type: 3}
+    isKey: 0
+  - id: 4
+    itemName: "\u8840\u8272\u56DE\u5FC6"
+    description: 
+    group: "\u56DE\u5FC6\u7EC4"
+    icon: {fileID: -1347577774, guid: a77c043563dc9a5468cd66c63c902772, type: 3}
+    isKey: 0
+  - id: 5
+    itemName: "\u91D1\u8272\u56DE\u5FC6"
+    description: 
+    group: "\u56DE\u5FC6\u7EC4"
+    icon: {fileID: 1010232401, guid: d44e1769de8794146a64214cc64491f3, type: 3}
+    isKey: 0
+  - id: 6
+    itemName: "\u9ED1\u8272\u56DE\u5FC6"
+    description: 
+    group: "\u56DE\u5FC6\u7EC4"
+    icon: {fileID: -1269332004, guid: 663e29344352b0647938d05614290ce6, type: 3}
+    isKey: 0
+  - id: 7
+    itemName: "\u65E9\u5F00\u7389\u5170"
+    description: 
+    group: "\u690D\u7269\u7EC4"
+    icon: {fileID: -1173645776, guid: a670a50e97847194b95d9c38ac76494b, type: 3}
+    isKey: 0
+  - id: 8
+    itemName: "\u53BB\u5E74\u7684\u677E\u5854"
+    description: 
+    group: "\u690D\u7269\u7EC4"
+    icon: {fileID: -821710239, guid: fb1cb6ca7f63c7c47a43ce0dbfabc155, type: 3}
+    isKey: 0
+  - id: 9
+    itemName: "\u53D1\u82BD\u7403\u830E"
+    description: 
+    group: "\u690D\u7269\u7EC4"
+    icon: {fileID: -363950404, guid: 15b0f5f855309f84bbcf7c5a2e43a408, type: 3}
+    isKey: 0
+  - id: 10
+    itemName: "\u8D64\u9CDE\u7247"
+    description: 
+    group: "\u690D\u7269\u7EC4"
+    icon: {fileID: -602906260, guid: 60bee5f7083c90c4ea91a7a869747d46, type: 3}
+    isKey: 0
+  - id: 11
+    itemName: "\u91D1\u7B14"
+    description: 
+    group: "\u690D\u7269\u7EC4"
+    icon: {fileID: -602906260, guid: 60bee5f7083c90c4ea91a7a869747d46, type: 3}
+    isKey: 0
+  - id: 12
+    itemName: "\u771F\u8BF0\u901A\u9274"
+    description: 
+    group: "\u5FD7\u5F02\u7EC4"
+    icon: {fileID: -33592342, guid: 75c35faba58c71343a5cbaa5fd2b109a, type: 3}
+    isKey: 0
+  - id: 13
+    itemName: "\u71C3\u9999"
+    description: 
+    group: "\u5FD7\u5F02\u7EC4"
+    icon: {fileID: -4945000, guid: dae8bac21e3e93248beec7ca5d9231c1, type: 3}
+    isKey: 0
+  - id: 14
+    itemName: "\u5409\u7B7E"
+    description: 
+    group: "\u5FD7\u5F02\u7EC4"
+    icon: {fileID: 355588640, guid: 7e3fc3e362398cd4fa6c3ebce9940f2e, type: 3}
+    isKey: 0
+  - id: 15
+    itemName: "\u723B"
+    description: 
+    group: "\u5FD7\u5F02\u7EC4"
+    icon: {fileID: -109562882, guid: 44adb04c23311394d8ffdb59c5e7d742, type: 3}
+    isKey: 0
+  - id: 16
+    itemName: "\u53D1\u73AF"
+    description: 
+    group: "\u5FD7\u5F02\u7EC4"
+    icon: {fileID: -1298023077, guid: 84c7b2403300d344ab9995754afedea2, type: 3}
+    isKey: 0
+  - id: 17
+    itemName: "\u4ECA\u65E5\u665A\u62A5"
+    description: 
+    group: "\u8BB0\u5F55\u7EC4"
+    icon: {fileID: -1304551937, guid: 9be6d75c59f97cd4f8e91f427664039a, type: 3}
+    isKey: 0
+  - id: 18
+    itemName: "\u63C9\u76B1\u7684\u6D77\u62A5"
+    description: 
+    group: "\u8BB0\u5F55\u7EC4"
+    icon: {fileID: 2057908228, guid: 700437d0b8e12634e8c272ec17b5528c, type: 3}
+    isKey: 0
+  - id: 19
+    itemName: "\u6CBB\u7597\u7684\u6D88\u606F"
+    description: 
+    group: "\u8BB0\u5F55\u7EC4"
+    icon: {fileID: 329801670, guid: f071f3728b6e3584387fc6edf2b7d382, type: 3}
+    isKey: 0
+  - id: 20
+    itemName: "\u5047\u6761"
+    description: 
+    group: "\u5FC3\u7EC4"
+    icon: {fileID: 1572849269, guid: ac49f94a443406841a5031fea36b492d, type: 3}
+    isKey: 0
+  - id: 21
+    itemName: "\u7D20\u63CF\u50CF"
+    description: 
+    group: "\u5FC3\u7EC4"
+    icon: {fileID: 1598037912, guid: 1168745d9de94d84a8cd5bd65c71256c, type: 3}
+    isKey: 0
+  - id: 22
+    itemName: "\u892A\u8272\u6A90\u5E3D"
+    description: 
+    group: "\u5FC3\u7EC4"
+    icon: {fileID: 2089011951, guid: 38b4193f246e96648bca593497043568, type: 3}
+    isKey: 0
+  - id: 23
+    itemName: "X\u7684\u7EA6\u5B9A"
+    description: 
+    group: "\u5FC3\u7EC4"
+    icon: {fileID: 341714524, guid: f03c449411f7de642b668244117e7303, type: 3}
+    isKey: 0
+  - id: 24
+    itemName: "\u51B7\u996D\u56E2"
+    description: 
+    group: "\u5FC3\u7EC4"
+    icon: {fileID: -335855481, guid: 00fe2e9e056180448b6e136d5e3e9dac, type: 3}
+    isKey: 0
+  - id: 25
+    itemName: "\u955C\u5B50"
+    description: 
+    group: "\u65F6\u95F4\u7EC4"
+    icon: {fileID: 2013426699, guid: cb8e9f34c5b802a408fa7b0cc4c40a3f, type: 3}
+    isKey: 0
+  - id: 26
+    itemName: "\u788E\u955C\u5B50"
+    description: 
+    group: "\u65F6\u95F4\u7EC4"
+    icon: {fileID: -2092113048, guid: f471fe5b96409244e97e0998deb7c624, type: 3}
+    isKey: 0
+  - id: 27
+    itemName: "\u8499\u5C18\u76F8\u673A"
+    description: 
+    group: "\u65F6\u95F4\u7EC4"
+    icon: {fileID: -1533833516, guid: 1ff16938835240f4290b0e509a07fe65, type: 3}
+    isKey: 0
+  - id: 28
+    itemName: "\u6D45\u6D45\u7684\u6BDB"
+    description: 
+    group: "\u65F6\u95F4\u7EC4"
+    icon: {fileID: -725635472, guid: 0c3d46a9b2d68a44b9dca19dbcedfa9a, type: 3}
+    isKey: 0
+  - id: 29
+    itemName: "\u5947\u602A\u7684\u5305\u88F9"
+    description: 
+    group: "\u65F6\u95F4\u7EC4"
+    icon: {fileID: -153055224, guid: 719839846e63c1143a2f99b3a2fdef47, type: 3}
+    isKey: 0
+  - id: 30
+    itemName: "\u5BB6\u4E2D\u7684\u5305\u88F9"
+    description: 
+    group: "\u65F6\u95F4\u7EC4"
+    icon: {fileID: 992012392, guid: 67a800c79de08df41a37ac49e681b552, type: 3}
+    isKey: 0
+  - id: 31
+    itemName: "\u5B9A\u68C0\u836F\u7269"
+    description: 
+    group: "\u836F\u7269\u7EC4"
+    icon: {fileID: 856247492, guid: ec6641ff3a2585a448abbd080fc04a2a, type: 3}
+    isKey: 0
+  - id: 32
+    itemName: "\u6280\u672F\u987E\u95EE\u673A\u5668\u4EBA"
+    description: 
+    group: "\u836F\u7269\u7EC4"
+    icon: {fileID: 512292728, guid: 78bbfc98374a13a489d5e18ecd0af106, type: 3}
+    isKey: 0
+  - id: 33
+    itemName: "\u5496\u55611"
+    description: 
+    group: "\u5496\u5561\u7EC4"
+    icon: {fileID: 403098419, guid: 661a826da6bff8a4a8ffd809aa9433f4, type: 3}
+    isKey: 0
+  - id: 34
+    itemName: "\u5496\u55612"
+    description: 
+    group: "\u5496\u5561\u7EC4"
+    icon: {fileID: 1702387988, guid: 03a2004272f9aed4a9f14f75aabddf1d, type: 3}
+    isKey: 0
+  - id: 35
+    itemName: "\u5496\u55613"
+    description: 
+    group: "\u5496\u5561\u7EC4"
+    icon: {fileID: 874932815, guid: 1b14c07f15cc9b5489c1839a556c19d2, type: 3}
+    isKey: 0
+  - id: 36
+    itemName: "\u5496\u55614"
+    description: 
+    group: "\u5496\u5561\u7EC4"
+    icon: {fileID: -926099328, guid: ec9ae03613c003341915bd048e6b8e62, type: 3}
+    isKey: 0
+  - id: 37
+    itemName: "\u5496\u55615"
+    description: 
+    group: "\u5496\u5561\u7EC4"
+    icon: {fileID: -1818714518, guid: 542d0aeeebc5676489e56203e9ea4bb9, type: 3}
+    isKey: 0

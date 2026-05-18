@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbe3d65d19d99465a99b47dc5535c663, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: 
+  normalWorkSalary: 30
+  activeWorkSalary: 60
+  coffeeShopSalary: 20
+  sanityLossFromWork: 0
+  sanityGainFromRest: -2
+  sanityGainFromThink: 1
+  gazeGameTimeLimit: 10
+  diceTotalCount: 5
+  diceSelectCount: 3
+  lotteryDigitCount: 6
+  interactRange: 2
+  interactKey: 101
+  timeSelectCountdown: 8
+  minTimeSlots: 2
+  maxTimeSlots: 4
+  coffee1SanityChange: 1
+  coffee2SanityChange: -1
+  coffee3MoneyBonus: 10
+  coffee4SpeedBonus: 1.2

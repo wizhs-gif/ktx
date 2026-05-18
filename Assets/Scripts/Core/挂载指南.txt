@@ -1,0 +1,996 @@
+================================================================================
+                Unity 多场景游戏 完整挂载指南（策划案版）
+================================================================================
+
+基于策划案分析，本游戏存在以下关键技术需求：
+- 双视角系统：室内第一人称 / 室外第三人称
+- 多场景架构：11+ 个独立场景
+- NPC条件生成系统：按天数、精神值、物品动态出现
+- 37个物品 + 8个物品组 + 组合系统
+- 5个时间段 × 7天的时间系统
+- 多种小游戏
+- 早上上班时间选择UI（8秒倒计时）
+
+
+================================================================================
+一、场景清单
+================================================================================
+
+  场景名              类型        视角        说明
+  ─────────────────────────────────────────────────────────────────────────────
+  MainMenu            UI场景      无3D        主菜单/标题画面
+  Subway              UI场景      无3D        地铁选站界面（纯UI）
+  Home                室内        第一人称    家，有三个交互+物品
+  OfficeInterior      室内        第一人称    办公室，工位四选一
+  Hospital            室外        第三人称    医院，3交互3事件NPC
+  OfficeBuilding      室外        第三人称    办公楼外观，传送点
+  Square              室外        第三人称    广场，3交互1固定NPC
+  Residential         室外        第三人称    小区，1物品2NPC+传送点
+  Cemetery            室外        第三人称    万安园陵园，3交互+树NPC
+  Park                室外        第三人称    林翠公园，观景台+跑者
+  SciencePark         室外        第三人称    生命科学园，2交互
+  Commercial          室外        第三人称    夕台商业区，咖啡馆+报亭
+
+
+================================================================================
+二、双视角系统说明
+================================================================================
+
+当前 PlayerManager.cs 只支持第一人称（相机作为子物体，鼠标控制旋转）。
+室外第三人称需要额外的相机控制逻辑。
+
+两种方案：
+
+方案A（推荐）：一个 PlayerManager 支持双模式
+  - 添加 public enum ViewMode { FirstPerson, ThirdPerson }
+  - 添加 [SerializeField] private ViewMode viewMode
+  - 第三人称时：相机在玩家身后偏上，显示玩家模型
+  - 第一人称时：相机在玩家眼部，隐藏玩家模型
+  - 每个场景的 Player Prefab 上设置不同的 ViewMode
+
+方案B：两套 Player Prefab
+  - Player_FP（第一人称）：用在 Home、OfficeInterior
+  - Player_TP（第三人称）：用在其他室外场景
+  - 每个场景拖入对应的 Prefab
+
+建议用方案A，代码改动小，统一管理。
+
+注意：Player 的 Tag 必须始终设为 "Player"，NPC 的触发检测依赖这个 Tag。
+
+
+================================================================================
+三、启动场景（MainMenu）
+================================================================================
+
+创建一个空 GameObject "GameManager"：
+
+  GameManager (GameObject)
+  ├── GameBootstrap.cs
+  │     拖入引用：
+  │     ├── ItemDatabase.asset
+  │     ├── NPCDatabase.asset
+  │     ├── GameConfig.asset
+  │     ├── GameDataManagerPrefab (可选)
+  │     ├── SaveSystemPrefab (可选)
+  │     └── InteractSystemPrefab (可选)
+  │
+  ├── UIManager.cs
+  ├── SceneController.cs
+  ├── GameFlowManager.cs
+  ├── ItemCombineSystem.cs
+  │     配置合成配方：
+  │     ├── 揉皱的海报 + 照片：血色回忆 → 治疗的消息
+  │     └── （后续配方）
+  │
+  └── TimeManager.cs
+
+  MiniGameRoot (GameObject)
+  └── MiniGameManager.cs
+
+这些全部 DontDestroyOnLoad，切场景后保留。
+
+
+================================================================================
+四、地铁场景（Subway）—— 纯UI场景
+================================================================================
+
+地铁场景不需要3D世界，是一个纯UI界面。
+
+  Canvas
+  └── SubwayUI (GameObject)
+        └── SubwayMapUI.cs                 ← 需要新写或用现有 Map/GameManager.cs
+              ├── 地铁线路图 Image
+              ├── 各站点 Button（五河站、通平苑站等）
+              ├── 站点说明 Text（鼠标悬停显示）
+              └── 功能：点击站点 → SceneController.Instance.LoadScene("目标场景")
+
+特殊逻辑（策划要求）：
+  - 开场前几天，只有特定站点高亮可点，其他站点灰色不可点
+  - 第4天开始UI变暗+噪点
+  - 第5天开始不可交互，直接出现字幕后自动跳转
+  - 这些逻辑需要在 SubwayMapUI 中根据 GameDataManager.Instance.CurrentDay 实现
+
+
+================================================================================
+五、室内场景通用模板（Home、OfficeInterior）
+================================================================================
+
+室内场景使用第一人称视角。
+
+  Player (GameObject)                   ← Tag = "Player"
+  ├── CharacterController
+  ├── PlayerManager.cs
+  │     viewMode = FirstPerson
+  │     cameraTransform → 拖入子 Camera
+  └── Camera (子物体)                   ← Main Camera
+
+  Canvas (仅用于交互提示和字幕)
+  ├── InteractPrompt (TextMeshProUGUI)  ← "按E交互" 提示
+  ├── HUDPanel                          ← 挂 HUDManager.cs
+  ├── DialoguePanel                     ← 挂 DialogueManager.cs（旧版Text）
+  ├── TimeSelectionPanel                ← 挂 TimeSelectionUI.cs
+  ├── DayEndPanel                       ← 挂 DayEndUI.cs
+  └── MapNameDisplay                    ← 挂 MapNameDisplay.cs
+
+
+--------------------------------------------------------------------------------
+Home（家）具体配置
+--------------------------------------------------------------------------------
+
+  Player 位置：卧室门口（起床位置）
+
+  室内可交互物体：
+  ├── 镜子 (交互)                      → 获得物品"镜子"
+  ├── 书架 (交互)                      → 获得物品"爻"
+  ├── 相机 (交互)                      → 获得物品"蒙尘相机"
+  ├── 咖啡机 (交互)                    → 开场引导交互
+  ├── 地铁线路图 (交互)                → 开场引导交互
+  └── 床 (交互)                        → 结束UI触发点
+
+  室内三选一交互（每天一次）：
+  ├── 录入 → 检查图鉴收集状态，根据套组给一次性奖励
+  ├── 思考 → 精神值+1，打开组合界面（ItemCombineUI）
+  └── 休息 → 精神值-2
+
+  物品组合台：
+  └── 思考时打开 ItemCombineUI，拖入物品组合
+      已知配方：揉皱的海报 + 照片：血色回忆 → 治疗的消息
+
+  特殊逻辑：
+  - 开场剧情时，卧室有虚化特效（没睁眼的感觉）
+  - 偏离引导方向时加眩晕UI特效
+  - 精神值差分：家的场景根据精神值有2-3个视觉差分
+
+  NPC：无固定NPC（剧情NPC通过事件触发）
+
+
+--------------------------------------------------------------------------------
+OfficeInterior（办公室内）具体配置
+--------------------------------------------------------------------------------
+
+  Player 位置：自己工位附近
+
+  室内交互物体：
+  └── 工位 (交互，四选一)
+        ├── 摸鱼 → 和隔壁工位NPC林悦聊天（对话）
+        ├── 工作 → 进入小游戏E（连连看），+60钱
+        ├── 放空 → 什么都不做
+        └── 看股票 → 进入小游戏F（股票）
+
+  每个活动消耗一个时间段，做完正好下班，+30钱（选工作则+60）
+
+  NPC：
+  └── 林霖（隔壁工位，固定出现，摸鱼时触发对话）
+
+  注意：进入办公室是通过办公写字楼的传送点，
+        到达后直接进入室内场景，跳过上班时间选择。
+
+
+================================================================================
+六、室外场景通用模板
+================================================================================
+
+室外场景使用第三人称视角。
+
+  Player (GameObject)                   ← Tag = "Player"
+  ├── CharacterController
+  ├── PlayerManager.cs
+  │     viewMode = ThirdPerson          ← 第三人称模式
+  │     cameraTransform → 拖入子 Camera（在玩家身后偏上）
+  └── Camera (子物体)                   ← Main Camera，距离玩家 3-5 单位
+
+  Canvas
+  ├── HUDPanel                          ← 挂 HUDManager.cs
+  ├── DialoguePanel                     ← 挂 DialogueManager.cs（旧版Text）
+  ├── TimeSelectionPanel                ← 挂 TimeSelectionUI.cs
+  ├── DayEndPanel                       ← 挂 DayEndUI.cs
+  └── MapNameDisplay                    ← 挂 MapNameDisplay.cs
+
+  NPCManager (GameObject)               ← 挂 NPCManager.cs
+  ├── NPCDatabase → 拖入 .asset
+  ├── NPCParent (空 GameObject)
+  └── NPCPrefab (可选)
+
+  交互点 (空 GameObject + Collider IsTrigger)
+  └── 挂对应的交互脚本或 NPCController
+
+
+================================================================================
+七、各室外场景详细配置
+================================================================================
+
+──────────────────────────────────────────────────────────────────────────────
+Hospital（医院）
+──────────────────────────────────────────────────────────────────────────────
+
+  交互点（3个）：
+  ├── 左侧位置 (交互)
+  │     无NPC时：虚空对话 → 获得"定检药物"
+  │     → 触发小游戏C（摇骰子：5选3，通过获得物品，未通过精神+1）
+  │     → 已有物品时再来：精神-1
+  │
+  ├── 住院楼前传送点 → 进入室内（不做了，按策划）
+  └── 门诊楼前传送点 → 进入室内（不做了）
+
+  NPC（3个事件NPC）：
+  ├── 季阳飞（纪以宁）
+  │     出现条件：第2天、第4天，住院楼前
+  │     位置：x=10, z=5
+  │     对话后获得"照片：血色回忆"
+  │     拥有"治疗的消息"时再次对话获得"X的约定"
+  │
+  ├── 陈微（陈司微）
+  │     出现条件：第3天，门诊楼前
+  │     位置：x=-8, z=3
+  │     拥有"素描像"时可对话
+  │     对话后选择：
+  │     ├── 获得"浅浅的毛"
+  │     └── 立刻传送回家，触发剧情
+  │
+  └── 林悦
+      出现条件：第5天，门诊楼前
+      拥有"定检药物"时触发对话
+
+  精神值差分：
+  └── 精神值不同，医院外观有2-3种变化
+
+
+──────────────────────────────────────────────────────────────────────────────
+OfficeBuilding（办公写字楼）
+──────────────────────────────────────────────────────────────────────────────
+
+  交互点（1个）：
+  └── 办公楼传送点 → 进入 OfficeInterior 室内场景
+      位置：悬空部分下方
+
+  物品（4个，可能通过交互或剧情获得）：
+  ├── 褪色檐帽
+  ├── 冷饭团
+  ├── 金笔
+  └── 照片：无色回忆
+
+  NPC：无（同事林霖在室内办公室）
+
+  上班流程：
+  早上选择时间段后 → 不进地铁 → 直接传到办公室室内
+
+
+──────────────────────────────────────────────────────────────────────────────
+Square（广场）
+──────────────────────────────────────────────────────────────────────────────
+
+  交互点（3个）：
+  ├── 右上角花坛 → 拾取"去年的松塔"
+  ├── 彩票店 → 小游戏D（六位数字老虎机），可以得钱
+  └── 庙（精神值>3时出现）
+        拥有"燃香"时可交互上香
+        → 精神值+1，获得"真诰通鉴"
+
+  NPC（1个固定NPC）：
+  └── 宣传员（右侧广场，固定出现）
+        交互回答问题 → 得到彩票券
+        每天可获得不一样的彩票号
+
+  精神值差分：
+  └── 精神值不同，广场外观有2-3种变化
+
+
+──────────────────────────────────────────────────────────────────────────────
+Residential（小区）
+──────────────────────────────────────────────────────────────────────────────
+
+  交互点（1个）：
+  └── 快递柜（第4天及之后可交互）
+        精神值<=4 → 获得"奇怪的包裹"
+        精神值>4  → 获得"来自家的包裹"
+
+  NPC（2个）：
+  ├── 林悦
+  │     出现条件：第2天，楼后角落
+  │     交互：出对话框但无文本
+  │     回家时触发文本剧情，获得"素描像"
+  │     不交互则不触发
+  │
+  └── 唐周（唐毅）（常驻NPC，快递员）
+        固定对话无选项
+        拥有"照片：蓝色回忆"时出现选项触发第二段对话
+
+  传送点：
+  └── 家（进入 Home 室内场景）
+
+  精神值差分：
+  └── 精神值不同，小区外观有2-3种变化
+
+
+──────────────────────────────────────────────────────────────────────────────
+Cemetery（万安园）
+──────────────────────────────────────────────────────────────────────────────
+
+  交互点（3个常规）：
+  ├── 亭子（香炉）→ 花钱买"燃香"
+  ├── 纪念馆 → 买花
+  └── 陵墓区
+        第4天出现新交互点（右上角树下）
+        ├── 交付花
+        ├── 交付"燃香"（都完成后旁边捡到"赤鳞片"）
+        └── 第二段：提交"褪色檐帽" → 获得"照片：蓝色回忆"
+
+  NPC：
+  └── 精神值>=3时：所有树变成可交互NPC
+      每个NPC只说一个字
+      交互点本身不变
+
+  精神值差分：
+  └── 树↔NPC的切换是最大的差分
+
+
+──────────────────────────────────────────────────────────────────────────────
+Park（林翠公园）
+──────────────────────────────────────────────────────────────────────────────
+
+  交互点：
+  ├── 观景台（三选一活动）
+  │     ├── 眺望（常驻）→ 小游戏A（限时），成功精神-1，失败精神+1
+  │     ├── 招领（精神>=4且跑者掉落后出现）
+  │     └── 拍照（交心后出现）→ 获得"照片：金色回忆"
+  │
+  └── 跑者（移动NPC，不可交互）
+        精神>=4且玩家靠近时掉落"发环"
+
+  NPC：
+  ├── 跑者（移动，不可交互，见上）
+  └── 林悦
+        出现条件：第6天
+        交互获得"吉签"
+        拥有"吉签"后再次遇到林悦 → 可进行"交心"
+        交心需要给出"假条"
+
+  地图特点：
+  - 南北纵深大，步道分三层（观景台最高→周边→绿化区最低）
+  - 地铁口有草坪
+  - 需要大量树木和植被
+
+  精神值差分：
+  └── 精神值不同，公园氛围有变化
+
+
+──────────────────────────────────────────────────────────────────────────────
+SciencePark（生命科学园）
+──────────────────────────────────────────────────────────────────────────────
+
+  交互点（2个）：
+  ├── 雕塑处 → 小游戏B，完成获得"技术顾问机器人"
+  └── 右侧楼前 → 获得"揉皱的海报"
+        后续可在家中研究获得"治疗的消息"
+        拥有"X的约定"后大楼前出现2个NPC，可对话
+
+  NPC：
+  └── 无常规NPC（有"X的约定"后出现2个事件NPC）
+
+  精神值差分：
+  └── 精神值不同，场景氛围有变化
+
+
+──────────────────────────────────────────────────────────────────────────────
+Commercial（夕台商业区）
+──────────────────────────────────────────────────────────────────────────────
+
+  交互点（3个）：
+  ├── 报刊亭 → 购买"（并非）今日晚报"
+  ├── 玉兰树（第7天）→ 获得"晚开玉兰"
+  └── 花坛（第3天）→ 获得"发芽球茎"
+
+  NPC（1常驻+1事件）：
+  ├── 娜汀（咖啡馆窗口，常驻）
+  │     可购买咖啡1-5（提供不同BUFF）
+  │     可选择打工 → 跳过时段+20钱
+  │     连续三天打工触发新对话
+  │
+  └── 季阳飞（纪以宁）
+        出现条件：第6天，咖啡馆门口
+        前提：未获得"X的约定"
+        可进行"交心"
+        交心后如有"晚开玉兰" → 交付获得"照片：黑色回忆"
+
+  地图特点：
+  - 斜向十字路口
+  - 南侧围挡（不可进入）
+  - 远景城市天际线贴图在地图最北边界
+  - 环形绿化带中心玉兰树
+
+
+================================================================================
+八、NPCDatabase 配置表
+================================================================================
+
+以下NPC需要在 NPCDatabase.asset 中配置：
+
+  NPC ID            名称        立绘        Prefab
+  ─────────────────────────────────────────────────────────────────────────────
+  ji_yang_fei       季阳飞      纪以宁立绘  NPC预制体（医院/夕台）
+  chen_wei          陈微        陈司微立绘  NPC预制体（医院）
+  lin_yue           林悦        通用女立绘  NPC预制体（多场景复用）
+  tang_zhou         唐周        唐毅立绘    NPC预制体（小区）
+  propagandist      宣传员      通用男立绘  NPC预制体（广场）
+  na_di             娜汀        独立立绘    NPC预制体（夕台）
+  runner            跑者        运动立绘    移动NPC预制体（公园，不可交互）
+  cemetery_npc      陵园幽灵    无立绘      NPC预制体（陵园，精神值>=3时树变NPC）
+
+通用NPC（2个）：
+  ├── 通用男NPC    颈部以上黑线涂掉
+  └── 通用女NPC    颈部以上黑线涂掉
+
+注意：林悦在多个场景出现（医院、小区、公园），可以用同一个NPCPrefab，
+     但 NPCController 的 dialogues 列表需要根据场景配置不同对话。
+     如果对话差异大，建议做成不同Prefab。
+
+
+================================================================================
+九、ItemDatabase 配置表（37个物品）
+================================================================================
+
+  ┌─────────────────────┬──────────────────┬────────┬─────────────────────────┐
+  │ id                  │ itemName         │ group  │ 获取方式                │
+  ├─────────────────────┼──────────────────┼────────┼─────────────────────────┤
+  │ memory_colorless    │ 照片：无色回忆   │ 回忆组 │ 办公楼                  │
+  │ memory_blue         │ 照片：蓝色回忆   │ 回忆组 │ 万安园（提交褪色檐帽后）│
+  │ memory_cyan         │ 照片：青色回忆   │ 回忆组 │ 家中（后续获得）        │
+  │ memory_blood        │ 照片：血色回忆   │ 回忆组 │ 医院NPC季阳飞           │
+  │ memory_gold         │ 照片：金色回忆   │ 回忆组 │ 公园（交心后拍照）      │
+  │ memory_black        │ 照片：黑色回忆   │ 回忆组 │ 夕台（交心+晚开玉兰）   │
+  ├─────────────────────┼──────────────────┼────────┼─────────────────────────┤
+  │ plant_magnolia      │ 晚开玉兰         │ 植物组 │ 夕台玉兰树（第7天）     │
+  │ plant_pinecone      │ 去年的松塔       │ 植物组 │ 广场花坛                │
+  │ plant_bulb          │ 发芽球茎         │ 植物组 │ 夕台花坛（第3天）       │
+  │ plant_redscale      │ 赤鳞片           │ 植物组 │ 万安园（交付花+燃香后） │
+  │ plant_goldpen       │ 金笔             │ 植物组 │ 办公楼                  │
+  ├─────────────────────┼──────────────────┼────────┼─────────────────────────┤
+  │ mystery_zhenhao     │ 真诰通鉴         │ 志异组 │ 广场庙（上香后）        │
+  │ mystery_incense     │ 燃香             │ 志异组 │ 万安园亭子购买          │
+  │ mystery_fortune     │ 吉签             │ 志异组 │ 公园NPC林悦（第6天）    │
+  │ mystery_yao         │ 爻               │ 志异组 │ 家中书架                │
+  │ mystery_hair        │ 发环             │ 志异组 │ 公园跑者掉落（精神>=4） │
+  ├─────────────────────┼──────────────────┼────────┼─────────────────────────┤
+  │ record_newspaper    │ （并非）今日晚报 │ 记录组 │ 夕台报亭购买            │
+  │ record_poster       │ 揉皱的海报       │ 记录组 │ 生命科学园右侧楼前      │
+  │ record_treatment    │ 治疗的消息       │ 记录组 │ 组合：海报+血色回忆     │
+  ├─────────────────────┼──────────────────┼────────┼─────────────────────────┤
+  │ heart_leave         │ 假条             │ 心组   │ （待定）                │
+  │ heart_sketch        │ 素描像           │ 心组   │ 小区NPC林悦（第2天）    │
+  │ heart_hat           │ 褪色檐帽         │ 心组   │ 办公楼                  │
+  │ heart_promise       │ X的约定          │ 心组   │ 医院NPC季阳飞（二次对话）│
+  │ heart_rice          │ 冷饭团           │ 心组   │ 办公楼                  │
+  ├─────────────────────┼──────────────────┼────────┼─────────────────────────┤
+  │ time_mirror         │ 镜子             │ 时间组 │ 家中镜子                │
+  │ time_broken_mirror  │ 碎镜子           │ 时间组 │ 家中（后续获得）        │
+  │ time_camera         │ 蒙尘相机         │ 时间组 │ 家中                    │
+  │ time_fur            │ 浅浅的毛         │ 时间组 │ 医院NPC陈微（选毛）    │
+  │ time_strange_package│ 奇怪的包裹       │ 时间组 │ 小区快递柜（精神<=4）   │
+  │ time_home_package   │ 来自家中的包裹   │ 时间组 │ 小区快递柜（精神>4）    │
+  ├─────────────────────┼──────────────────┼────────┼─────────────────────────┤
+  │ medicine_check      │ 定检药物         │ 药物组 │ 医院交互点              │
+  │ medicine_robot      │ 技术顾问机器人   │ 药物组 │ 生命科学园小游戏B       │
+  ├─────────────────────┼──────────────────┼────────┼─────────────────────────┤
+  │ coffee_1            │ 咖啡1            │ 咖啡组 │ 夕台咖啡馆购买          │
+  │ coffee_2            │ 咖啡2            │ 咖啡组 │ 夕台咖啡馆购买          │
+  │ coffee_3            │ 咖啡3            │ 咖啡组 │ 夕台咖啡馆购买          │
+  │ coffee_4            │ 咖啡4            │ 咖啡组 │ 夕台咖啡馆购买          │
+  │ coffee_5            │ 咖啡5            │ 咖啡组 │ 夕台咖啡馆购买          │
+  └─────────────────────┴──────────────────┴────────┴─────────────────────────┘
+
+  ItemCombineSystem 配方：
+  ┌──────────────────────┬──────────────────────┬──────────────────┐
+  │ input1               │ input2               │ result           │
+  ├──────────────────────┼──────────────────────┼──────────────────┤
+  │ record_poster        │ memory_blood         │ record_treatment │
+  │ （后续补充其他配方） │                      │                  │
+  └──────────────────────┴──────────────────────┴──────────────────┘
+
+
+================================================================================
+十、GameConfig 参数配置
+================================================================================
+
+  参数                    值      说明
+  ─────────────────────────────────────────────────────────────────────────────
+  normalWorkSalary        30      正常上班工资
+  activeWorkSalary        60      选择"工作"选项的工资
+  coffeeShopSalary        20      咖啡馆打工工资
+  sanityLossFromWork      0       上班精神消耗
+  sanityGainFromRest      -2      休息恢复精神值
+  sanityGainFromThink     1       思考消耗精神值
+  gazeGameTimeLimit       10      眺望小游戏限时（秒）
+  diceTotalCount          5       骰子总数
+  diceSelectCount         3       选择骰子数
+  lotteryDigitCount       6       老虎机位数
+  interactRange           2       交互距离
+  interactKey             E       交互按键
+  timeSelectCountdown     8       上班时间选择倒计时（秒）
+  minTimeSlots            2       最少选择时间段数
+  maxTimeSlots            4       最多选择时间段数
+  coffee1SanityChange     1       咖啡1效果（+精神）
+  coffee2SanityChange     -1      咖啡2效果（-精神）
+  coffee3MoneyBonus       10      咖啡3效果（+挣钱效率）
+  coffee4SpeedBonus       1.2     咖啡4效果（+移动速度）
+
+
+================================================================================
+十一、小游戏挂载
+================================================================================
+
+小游戏在启动场景的 MiniGameManager 中统一管理，跨场景持久化。
+建议所有小游戏面板也放在启动场景中并 DontDestroyOnLoad。
+
+  MiniGameRoot (GameObject)             ← 启动场景，DontDestroyOnLoad
+  └── MiniGameManager.cs
+        拖入引用：
+        ├── gazeGame      → GazeMiniGame
+        ├── diceGame      → DiceMiniGame
+        ├── slotGame      → SlotMachineMiniGame
+        ├── matchGame     → MatchMiniGame
+        ├── stockGame     → StockMiniGame
+        └── sculptureGame → SculptureMiniGame
+
+──────────────────────────────────────────────────────────────────────────────
+小游戏A：眺望（GazeMiniGame）—— 林翠公园
+──────────────────────────────────────────────────────────────────────────────
+
+  挂载：GazeGamePanel (GameObject) ← 挂 GazeMiniGame.cs
+  继承自 MiniGameBase 的引用：
+    miniGamePanel → 拖入自身
+    closeButton   → Button
+  自身引用：
+    gazeProgressBar   → Image（进度条）
+    instructionText   → TextMeshProUGUI
+    gazeTarget        → RectTransform（目标区域）
+    gazeCursor        → RectTransform（玩家光标）
+  配置：
+    gazeTimeRequired  → 需要注视的时间（默认5秒）
+    gazeRange         → 判定范围（默认0.8）
+    timeLimit         → 总限时（默认10秒）
+  效果：
+    成功 → 精神值-1
+    失败 → 精神值+1
+  调用：MiniGameManager.Instance.StartMiniGame(MiniGameType.Gaze, callback)
+
+
+──────────────────────────────────────────────────────────────────────────────
+小游戏C：摇骰子（DiceMiniGame）—— 医院
+──────────────────────────────────────────────────────────────────────────────
+
+  挂载：DiceGamePanel (GameObject) ← 挂 DiceMiniGame.cs
+  继承自 MiniGameBase 的引用：
+    miniGamePanel → 拖入自身
+    closeButton   → Button
+  自身引用：
+    diceContainer   → Transform（空物体，骰子生成到这里）
+    dicePrefab      → 预制体，挂 Dice.cs + Image + 6张骰子面Sprite
+    rollButton      → Button（摇骰子）
+    confirmButton   → Button（确认选择）
+    instructionText → TextMeshProUGUI
+    resultText      → TextMeshProUGUI
+  配置：
+    totalDice       → 骰子总数（默认5）
+    selectCount     → 选择数量（默认3）
+    targetSum       → 目标点数（默认10）
+    timeLimit       → 限时
+  效果：
+    成功 → 获得"定检药物"（由外部控制）
+    失败 → 精神值+1
+  调用：MiniGameManager.Instance.StartMiniGame(MiniGameType.Dice, callback)
+
+
+──────────────────────────────────────────────────────────────────────────────
+小游戏D：老虎机（SlotMachineMiniGame）—— 广场
+──────────────────────────────────────────────────────────────────────────────
+
+  挂载：SlotMachinePanel (GameObject) ← 挂 SlotMachineMiniGame.cs
+  继承自 MiniGameBase 的引用：
+    miniGamePanel → 拖入自身
+    closeButton   → Button
+  自身引用：
+    digitContainer  → Transform（空物体，数字生成到这里）
+    digitPrefab     → 预制体，挂 SlotDigit.cs + TextMeshProUGUI
+    spinButton      → Button（旋转）
+    resultText      → TextMeshProUGUI
+    prizeText       → TextMeshProUGUI
+  配置：
+    digitCount      → 数字位数（默认6）
+    prizeAmounts    → 奖金数组 {100, 50, 20, 10}
+    matchCounts     → 对应匹配数 {6, 5, 4, 3}
+    spinDuration    → 旋转时长
+  效果：
+    中奖 → 获得对应金额
+  调用：MiniGameManager.Instance.StartMiniGame(MiniGameType.SlotMachine, callback)
+
+
+──────────────────────────────────────────────────────────────────────────────
+小游戏E：连连看（MatchMiniGame）—— 办公室"工作"选项
+──────────────────────────────────────────────────────────────────────────────
+
+  挂载：MatchGamePanel (GameObject) ← 挂 MatchMiniGame.cs
+  继承自 MiniGameBase 的引用：
+    miniGamePanel → 拖入自身
+    closeButton   → Button
+  自身引用：
+    cardContainer   → Transform（Grid Layout Group，卡牌生成到这里）
+    cardPrefab      → 预制体，挂 MatchCard.cs + Image（正反面）
+    pairCountText   → TextMeshProUGUI（配对计数）
+    timerText       → TextMeshProUGUI（倒计时）
+    cardSprites     → Sprite[]（不同图案的图片，至少8种）
+  配置：
+    gridRows        → 行数（默认4）
+    gridCols        → 列数（默认4，总牌数必须是偶数）
+    flipBackDelay   → 翻回延迟（默认0.8秒）
+    timeLimit       → 总限时
+    rewardMoney     → 通关奖励金钱（默认60）
+  效果：
+    通关 → +60钱
+    超时 → 失败
+  调用：MiniGameManager.Instance.StartMiniGame(MiniGameType.MatchGame, callback)
+
+  卡牌预制体结构：
+    MatchCard (GameObject)
+    ├── CardImage (Image)           → 正面图案（默认隐藏）
+    ├── BackImage (Image)           → 背面图案（默认显示）
+    └── MatchedIndicator (GameObject) → 配对成功标记（默认隐藏）
+    需要给 MatchCard GameObject 添加 Button 组件或 EventTrigger 触发 OnClick
+
+
+──────────────────────────────────────────────────────────────────────────────
+小游戏F：股票（StockMiniGame）—— 办公室"看股票"选项
+──────────────────────────────────────────────────────────────────────────────
+
+  挂载：StockGamePanel (GameObject) ← 挂 StockMiniGame.cs
+  继承自 MiniGameBase 的引用：
+    miniGamePanel → 拖入自身
+    closeButton   → Button
+  自身引用：
+    stockNameText   → TextMeshProUGUI（股票名称）
+    priceText       → TextMeshProUGUI（当前股价）
+    moneyText       → TextMeshProUGUI（资金）
+    holdingText     → TextMeshProUGUI（持仓）
+    profitText      → TextMeshProUGUI（盈亏）
+    messageText     → TextMeshProUGUI（交易消息）
+    buyButton       → Button（买入）
+    sellButton      → Button（卖出）
+    endButton       → Button（结束交易）
+    chartContainer  → Transform（图表区域）
+    chartDotPrefab  → 预制体（图表上的点，带 Image）
+  配置：
+    startMoney      → 初始资金（默认100）
+    volatility      → 波动率（默认0.15）
+    targetProfit    → 目标盈利（默认50）
+    timeLimit       → 总限时
+    failSanityChange → 失败精神变化（默认+1）
+  效果：
+    盈利达标 → 获得盈利金额
+    未达标   → 精神值+1
+  调用：MiniGameManager.Instance.StartMiniGame(MiniGameType.StockGame, callback)
+
+
+──────────────────────────────────────────────────────────────────────────────
+小游戏B：雕塑交互（SculptureMiniGame）—— 生命科学园
+──────────────────────────────────────────────────────────────────────────────
+
+  挂载：SculptureGamePanel (GameObject) ← 挂 SculptureMiniGame.cs
+  继承自 MiniGameBase 的引用：
+    miniGamePanel → 拖入自身
+    closeButton   → Button
+  自身引用：
+    instructionText   → TextMeshProUGUI（提示文字）
+    scoreText         → TextMeshProUGUI（分数）
+    timingText        → TextMeshProUGUI（时机提示）
+    beatBar           → Image（节拍条背景）
+    hitZone           → Image（高亮命中区域）
+    movingIndicator   → Image（移动的标记）
+    actionButton      → Button（按空格或点击）
+  配置：
+    requiredHits      → 需要命中次数（默认8）
+    beatInterval      → 节拍周期（默认0.8秒）
+    hitZone           → 命中区域大小调整
+    maxMisses         → 最大失误数（默认3）
+    rewardItemId      → 奖励物品ID（默认"medicine_robot"）
+  效果：
+    通关 → 获得"技术顾问机器人"
+    失败 → 无奖励
+  调用：MiniGameManager.Instance.StartMiniGame(MiniGameType.SculptureGame, callback)
+
+  玩法：标记在节拍条上来回移动，在到达高亮区域时按空格键，
+        累计成功8次通关，失误3次失败。
+
+
+================================================================================
+十二、时间选择UI逻辑（早上弹出）
+================================================================================
+
+策划要求：
+  - 每天早上弹出时间选择界面
+  - 左侧打勾，6个可勾选项：
+    ├── 5个时间段（8-11, 11-14, 14-17, 17-20, 20-23）
+    └── "正常上班"（始终高亮，框更大，有引导箭头）
+  - 现实8秒内完成选择（倒计时）
+  - 选择"正常上班" = 8-20四个时间段，直接传到办公室
+  - 不勾"正常上班"时，至少勾2个其他时间段
+
+  实现位置：TimeSelectionUI.cs
+
+  流程：
+  GameFlowManager.StartDay()
+    → TimeSelectionUI.OpenSelection(callback)
+    → 玩家选择
+    → callback 返回选择的时间段列表
+    → GameFlowManager 按顺序推进时间段
+
+
+================================================================================
+十三、"交心"核心机制
+================================================================================
+
+策划核心行为：把自己的心掏出来交给对方。要血腥！要震撼！
+
+  触发条件：
+  - 公园林悦：拥有"吉签"后，交出"假条"
+  - 夕台季阳飞：第6天，未拥有"X的约定"
+
+  效果：
+  - 每次交心精神值升高一级
+  - 视角变得更恐怖
+  - 播放掏心动画
+
+  实现建议：
+  - 新建 HeartExchange.cs 脚本，挂在对应NPC上
+  - 触发时播放动画（可用 Timeline 或 Coroutine 实现）
+  - 修改精神值 + 触发视角变化
+  - 视角恐怖效果：后处理（Post Processing）加 Vignette、色调偏移
+
+
+================================================================================
+十四、精神值差分系统
+================================================================================
+
+精神值 0-5 六档，影响：
+
+  1. NPC对话内容不同
+  2. 地图外观变化（2-3个差分）
+  3. 部分交互点出现/消失
+  4. 陵园：树 ↔ NPC 切换
+  5. 公园：跑者掉落物品触发
+  6. 广场：庙的出现
+  7. UI效果（恐怖程度递增）
+
+  实现方式：
+  - 各场景物体默认激活/隐藏，由 NPCManager 或场景初始化脚本
+    根据 GameDataManager.Instance.Sanity 控制
+  - 精神值变化时通过 GameEvents.OnSanityChanged 事件触发刷新
+
+
+================================================================================
+十五、开场剧情流程
+================================================================================
+
+  黑屏 → 过场字幕 "2026.3.17 8:00"
+    → 地铁UI（五河站高亮，其他不可点）
+    → 悬停字幕 "周二，上班。"
+
+  黑屏 → "2026.3.18 8:00"
+    → 地铁UI "周三，去上班。"
+
+  黑屏 → "2026.3.19 8:00"
+    → 地铁UI变暗，不可交互，字幕 "去上班。"
+
+  黑屏 → "2026.3.20 8:00"
+    → 地铁UI加噪点，不可交互 "上班。"
+
+  黑屏 → "2026.3.20 20:00"
+    → 地铁UI，通平苑站高亮
+    → "今天干了什么……？已经完全忘了。也无所谓。"
+    → "回家吧。回家。"
+    → 点击后UI恢复原色
+    → 传送到 Home 室内，面对墙上地铁线路图
+    → 鼠标从选站变成3D视角移动（假象效果）
+
+  室内 → "你感到极度疲惫。"
+    → 引导往卧室走（偏离时眩晕特效）
+
+  黑屏 → "2026.3.21 8:00"
+    → 室内视角，虚化特效（没睁眼）
+    → "你在晨光中醒来。"
+    → 关特效
+    → 出卧室触发反思文本
+    → 允许移动
+    → 三个交互点（地铁图/书架/咖啡机）
+    → "你的心和这些东西一起，蒙上了一层灰尘。"
+    → 出门，引导到青庄
+    → 进地图触发死亡
+    → 接"回到这一天开始"
+
+  开场剧情建议用 Timeline 或 Coroutine 序列实现，
+  新建 OpeningSequence.cs 挂在 Home 场景中。
+
+
+================================================================================
+十六、PlayerManager 双视角系统
+================================================================================
+
+PlayerManager 现在支持两种视角模式，通过 Inspector 的 ViewMode 下拉框切换。
+
+  使用方法：
+  1. 选中场景中的 Player GameObject
+  2. 在 PlayerManager 组件的"视角模式"下拉框中选择：
+     - FirstPerson（第一人称）→ 用于 Home、OfficeInterior
+     - ThirdPerson（第三人称）→ 用于所有室外场景
+
+  第一人称模式：
+  - 相机在玩家眼部（子物体位置）
+  - 鼠标控制玩家转向 + 相机俯仰
+  - 有头部晃动效果
+  - 按移动方向行走
+
+  第三人称模式：
+  - 相机在玩家身后偏上
+  - 鼠标水平：环绕玩家旋转
+  - 鼠标垂直：调整俯仰角（-20°~60°）
+  - 移动方向相对相机（WASD控制方向）
+  - 角色自动朝移动方向转身
+
+  第三人称参数（Inspector可调）：
+  - thirdPersonDistance  → 相机距离（默认4）
+  - thirdPersonHeight   → 相机高度（默认2）
+  - thirdPersonLookOffset → 看向点偏移（默认1.5）
+  - orbitSmoothSpeed    → 环绕平滑度（默认10）
+
+
+================================================================================
+十七、SubwayMapUI 地铁选站界面
+================================================================================
+
+  文件位置：Scripts/Scene/SubwayMapUI.cs
+
+  使用方法：
+  1. 在 Subway 场景的 Canvas 上挂载 SubwayMapUI.cs
+  2. 在 Inspector 中配置站点列表 stations：
+     - stationName → 站点显示名（如"医院"）
+     - sceneName   → 对应场景名（如"Hospital"）
+     - stationButton → 拖入对应的 Button
+     - availableFromDay → 从第几天开始可点击（默认1）
+  3. 拖入 subwayPanel（面板根物体）
+  4. 可选：拖入 hintText（提示文字）、stationTooltip（悬停提示）
+  5. 可选：配置 backgroundImage + noiseMaterial 实现变暗/噪点效果
+
+  自动行为：
+  - 根据 GameDataManager.Instance.CurrentDay 自动禁用未开放站点
+  - 第3天起UI变暗
+  - 第4天起加噪点
+
+  开场剧情用法（由 OpeningSequence 调用）：
+  subwayMapUI.SetOpeningState(dayIndex, dayText, highlightIndex, interactable)
+    - dayIndex → 开场第几天（0-4）
+    - dayText → 显示的字幕
+    - highlightIndex → 高亮的站点索引
+    - interactable → 是否可点击
+
+
+================================================================================
+十八、OpeningSequence 开场剧情
+================================================================================
+
+  文件位置：Scripts/Scene/OpeningSequence.cs
+
+  使用方法：
+  1. 在 Home 场景中挂载 OpeningSequence.cs
+  2. 在 Inspector 中拖入：
+     - overlayCanvas    → 覆盖用的 Canvas（最上层）
+     - blackoutImage    → 全屏黑幕 Image
+     - subtitleText     → 字幕 TextMeshProUGUI
+     - vignetteOverlay  → 眩晕特效 Image（可选）
+     - blurOverlay      → 虚化特效 Image（可选）
+     - interactPromptRoot → 交互提示根物体（开场后显示）
+     - subwayMapObject  → 墙上地铁线路图（用于设置玩家朝向）
+  3. 卧室门口放一个 Collider (IsTrigger)，触发时调用：
+     openingSequence.OnReachedBedroom()
+  4. 大门口放一个 Collider (IsTrigger)，触发时调用：
+     openingSequence.OnPlayerLeftHome()
+
+  自动行为：
+  - 游戏开始时检查 CurrentDay，如果>1则跳过开场
+  - 播放5天的黑屏字幕序列
+  - 传送到家，面对地铁线路图
+  - 引导去卧室（偏离时眩晕特效）
+  - 卧室虚化特效 → 反思文本
+  - 出门 → 加载小区场景
+
+  Trigger 挂载示例（卧室门口）：
+    BedroomTrigger (BoxCollider, IsTrigger)
+    └── 挂一个简单脚本：
+        void OnTriggerEnter(Collider other) {
+            if (other.CompareTag("Player"))
+                FindObjectOfType<OpeningSequence>().OnReachedBedroom();
+        }
+
+
+================================================================================
+十九、HeartExchange 交心机制
+================================================================================
+
+  文件位置：Scripts/NPC/HeartExchange.cs
+
+  使用方法：
+  1. 在可交心的NPC GameObject 上挂载 HeartExchange.cs
+     （公园林悦、夕台季阳飞）
+  2. NPC 必须有 Collider (IsTrigger)
+  3. 在 Inspector 中配置：
+     - requiredItemId    → 需要交出的物品ID
+       公园林悦：heart_leave（假条）
+       夕台季阳飞：（空，不需要物品）
+     - rewardItemId      → 交心后获得的物品ID（可选）
+       公园林悦：（空）
+       夕台季阳飞：（空）
+     - dayRequired       → 需要的天数
+       公园林悦：6
+       夕台季阳飞：6
+     - prerequisiteFlag   → 前置标记（可选）
+       公园林悦：（空，但需要有"吉签"由NPCController控制）
+     - heartEffectPrefab → 心脏特效预制体（需要自己做）
+     - heartSpawnPoint   → 心脏生成位置（可选，默认NPC上方1.2m）
+
+  自动行为：
+  - 玩家进入触发区 + 满足条件时可按E触发
+  - 播放：屏幕震动 + 红色色调偏移 + 暗角效果 + 心脏上升动画
+  - 移除 requiredItemId
+  - 给予 rewardItemId（如果有）
+  - 精神值+1
+  - 设置标记 "heart_exchange_{NPC名}"
+
+  调用后检查标记：
+  GameDataManager.Instance.GetFlag("heart_exchange_XXX")
+
+
+================================================================================
+二十、代码修改清单
+================================================================================
+
+  已完成：
+  ✅ TimeManager.cs — 加了 DontDestroyOnLoad
+  ✅ SceneController.cs — mapNameDisplay 改为动态查找 + 补全场景名映射
+  ✅ GameFlowManager.cs — RebindSceneUI() 动态查找
+  ✅ UIManager.cs — RebindScenePanels() 动态查找
+  ✅ DialogueManager.cs — 加了 Instance 单例
+  ✅ PlayerManager.cs — 添加第三人称视角支持
+  ✅ TimeSelectionUI.cs — 倒计时改为 unscaledDeltaTime
+  ✅ MiniGameManager.cs — 加入新小游戏枚举和引用
+  ✅ 新建 SubwayMapUI.cs — 地铁选站界面
+  ✅ 新建 OpeningSequence.cs — 开场剧情序列
+  ✅ 新建 HeartExchange.cs — 交心机制
+  ✅ 新建 MatchMiniGame.cs — 连连看小游戏
+  ✅ 新建 StockMiniGame.cs — 股票小游戏
+  ✅ 新建 SculptureMiniGame.cs — 雕塑交互小游戏
+
+  待做（需要美术/策划配合）：
+  ⬜ 各场景根据精神值/天数控制NPC和交互点的初始化脚本
+  ⬜ 心脏特效预制体（HeartExchange 用）
+  ⬜ 卡牌图案 Sprite（连连看用）
+  ⬜ 骰子面 Sprite（摇骰子用）
+  ⬜ 地铁线路图 UI 设计
+  ⬜ 噪点材质（SubwayMapUI 用）
+  ⬜ 各场景的 Trigger 区域放置

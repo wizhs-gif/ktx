@@ -13,6 +13,9 @@ public class MiniGameManager : MonoBehaviour
     [SerializeField] private GazeMiniGame gazeGame;           // 小游戏A：眺望
     [SerializeField] private DiceMiniGame diceGame;           // 小游戏C：摇骰子
     [SerializeField] private SlotMachineMiniGame slotGame;    // 小游戏D：老虎机
+    [SerializeField] private MatchMiniGame matchGame;         // 小游戏E：连连看
+    [SerializeField] private StockMiniGame stockGame;         // 小游戏F：股票
+    [SerializeField] private SculptureMiniGame sculptureGame; // 小游戏B：雕塑交互
 
     private MiniGameBase currentGame;
     private Action<MiniGameResult> onGameComplete;
@@ -47,6 +50,15 @@ public class MiniGameManager : MonoBehaviour
                 break;
             case MiniGameType.SlotMachine:
                 currentGame = slotGame;
+                break;
+            case MiniGameType.MatchGame:
+                currentGame = matchGame;
+                break;
+            case MiniGameType.StockGame:
+                currentGame = stockGame;
+                break;
+            case MiniGameType.SculptureGame:
+                currentGame = sculptureGame;
                 break;
             default:
                 Debug.LogError($"[MiniGameManager] 未知的小游戏类型: {gameType}");
@@ -89,5 +101,6 @@ public enum MiniGameType
     Dice,           // 摇骰子（医院）
     SlotMachine,    // 老虎机（广场）
     MatchGame,      // 连连看（办公室）
-    StockGame       // 股票（办公室）
+    StockGame,      // 股票（办公室）
+    SculptureGame   // 雕塑交互（生命科学园）
 }

@@ -14,9 +14,7 @@ public class SceneController : MonoBehaviour
     [SerializeField] private string homeSceneName = "Home";
     [SerializeField] private string subwaySceneName = "SubWay";
 
-    [Header("UI")]
-    [SerializeField] private MapNameDisplay mapNameDisplay;
-
+    private MapNameDisplay mapNameDisplay;
     private string currentSceneName;
 
     private void Awake()
@@ -45,6 +43,15 @@ public class SceneController : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         currentSceneName = scene.name;
+
+        // 每次切场景重新查找场景内的UI引用
+        mapNameDisplay = FindObjectOfType<MapNameDisplay>();
+
+        // 通知 UIManager 和 GameFlowManager 重新绑定场景UI
+        if (UIManager.Instance != null)
+            UIManager.Instance.RebindScenePanels();
+        if (GameFlowManager.Instance != null)
+            GameFlowManager.Instance.RebindSceneUI();
 
         // 更新地图名称显示
         if (mapNameDisplay != null)
@@ -101,6 +108,8 @@ public class SceneController : MonoBehaviour
             case "Cemetery": return MapNames.CEMETERY;
             case "SciencePark": return MapNames.SCIENCE_PARK;
             case "Commercial": return MapNames.COMMERCIAL;
+            case "Residential": return MapNames.COMMUNITY;
+            case "OfficeInterior": return MapNames.OFFICE_INDOOR;
             default: return sceneName;
         }
     }

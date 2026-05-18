@@ -9,9 +9,8 @@ public class GameFlowManager : MonoBehaviour
 {
     public static GameFlowManager Instance { get; private set; }
 
-    [Header("UI引用")]
-    [SerializeField] private TimeSelectionUI timeSelectionUI;
-    [SerializeField] private DayEndUI dayEndUI;
+    private TimeSelectionUI timeSelectionUI;
+    private DayEndUI dayEndUI;
 
     private bool isDayActive;
     private List<TimeSegment> selectedTimeSegments;
@@ -34,6 +33,18 @@ public class GameFlowManager : MonoBehaviour
     {
         GameEvents.OnDayStarted += OnDayStarted;
         GameEvents.OnDayEnded += OnDayEnded;
+    }
+
+    /// <summary>
+    /// 场景加载后重新绑定场景内的UI引用
+    /// 由 SceneController.OnSceneLoaded 自动调用
+    /// </summary>
+    public void RebindSceneUI()
+    {
+        timeSelectionUI = FindObjectOfType<TimeSelectionUI>();
+        dayEndUI = FindObjectOfType<DayEndUI>();
+
+        Debug.Log("[GameFlowManager] 场景UI已重新绑定");
     }
 
     private void OnDisable()
