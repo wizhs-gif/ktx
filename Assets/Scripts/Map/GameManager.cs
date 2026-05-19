@@ -13,6 +13,10 @@ public class GameManager : MonoBehaviour
     public Button yes;
     public Button no;
     public Button NewGame;
+
+    [Header("游戏启动器")]
+    [SerializeField] private GameBootstrap gameBootstrap;
+
     void Start()
     {
         StartButton.onClick.AddListener(GameStart);
@@ -21,15 +25,20 @@ public class GameManager : MonoBehaviour
         EndPanel.SetActive(false);
         yes.onClick.AddListener(SureEnd);
         no.onClick.AddListener(RefuseEnd);
-
-
     }
 
-    // Update is called once per frame
     void GameStart()
     {
         Debug.Log("游戏开始");
-        SceneManager.LoadScene("Map");
+
+        if (gameBootstrap != null)
+        {
+            gameBootstrap.StartNewGame();
+        }
+        else
+        {
+            SceneManager.LoadScene("Home");
+        }
     }
 
     void ShowNameList()

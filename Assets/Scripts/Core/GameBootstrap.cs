@@ -134,8 +134,8 @@ public class GameBootstrap : MonoBehaviour
             SaveSystem.Instance.DeleteSave();
         }
 
-        // 加载第一天场景
-        SceneManager.LoadScene("Day1_Start");
+        // 加载第一天场景（Home场景包含开场剧情）
+        SceneManager.LoadScene("Home");
     }
 
     /// <summary>
@@ -146,9 +146,8 @@ public class GameBootstrap : MonoBehaviour
         if (SaveSystem.Instance != null && SaveSystem.Instance.HasSave())
         {
             SaveSystem.Instance.LoadGame();
-            // 加载对应天数的场景
-            int day = GameDataManager.Instance.CurrentDay;
-            SceneManager.LoadScene($"Day{day}_Start");
+            // 加载Home场景，OpeningSequence会根据天数决定是否跳过开场
+            SceneManager.LoadScene("Home");
         }
         else
         {
