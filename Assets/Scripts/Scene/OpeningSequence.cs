@@ -42,7 +42,8 @@ public class OpeningSequence : MonoBehaviour
         playerManager = FindObjectOfType<PlayerManager>();
 
         // 检查是否已完成开场（避免重复播放）
-        if (GameDataManager.Instance != null && GameDataManager.Instance.CurrentDay > 1)
+        if (GameDataManager.Instance != null &&
+            GameDataManager.Instance.GetFlag("opening_completed"))
         {
             SkipOpening();
             return;
@@ -222,6 +223,12 @@ public class OpeningSequence : MonoBehaviour
     {
         EnablePlayerMovement(false);
         yield return StartCoroutine(FadeOut());
+
+        // 标记开场已完成，下次不再播放
+        if (GameDataManager.Instance != null)
+        {
+            GameDataManager.Instance.SetFlag("opening_completed", true);
+        }
 
         // 引导到青庄（Residential场景）
         yield return StartCoroutine(ShowSubtitle("你走出家门。"));

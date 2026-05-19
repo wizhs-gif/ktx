@@ -6,13 +6,15 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    [Header("按钮")]
     public Button StartButton;
-    public Button NameListButton;
+    public Button ContinueButton;
     public Button EndButton;
+
+    [Header("退出确认面板")]
     public GameObject EndPanel;
     public Button yes;
     public Button no;
-    public Button NewGame;
 
     [Header("游戏启动器")]
     [SerializeField] private GameBootstrap gameBootstrap;
@@ -20,16 +22,23 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         StartButton.onClick.AddListener(GameStart);
-        NameListButton.onClick.AddListener(ShowNameList);
+        ContinueButton.onClick.AddListener(ContinueGame);
         EndButton.onClick.AddListener(EndGame);
+
         EndPanel.SetActive(false);
         yes.onClick.AddListener(SureEnd);
         no.onClick.AddListener(RefuseEnd);
+
+        // 没有存档时禁用继续按钮
+        if (SaveSystem.Instance != null && !SaveSystem.Instance.HasSave())
+        {
+            ContinueButton.interactable = false;
+        }
     }
 
     void GameStart()
     {
-        Debug.Log("游戏开始");
+        Debug.Log("开始新游戏");
 
         if (gameBootstrap != null)
         {
@@ -41,27 +50,36 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void ShowNameList()
+    void ContinueGame()
     {
-        SceneManager.LoadScene("NameList");
+        Debug.Log("继续游戏");
+
+        if (gameBootstrap != null)
+        {
+            gameBootstrap.ContinueGame();
+        }
+        else
+        {
+            SceneManager.LoadScene("Home");
+        }
     }
+
     void EndGame()
     {
         EndPanel.SetActive(true);
-        Time.timeScale = 0f;
     }
+
     void SureEnd()
     {
-        Application.Quit();
 #if UNITY_EDITOR
-       
         UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
 #endif
     }
+
     void RefuseEnd()
     {
         EndPanel.SetActive(false);
-        Time.timeScale = 1f;
     }
-    
 }

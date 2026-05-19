@@ -6,10 +6,7 @@ using TMPro;
 
 /// <summary>
 /// 上班时间选择UI - 每天早上弹出选择时间段
-/// 规则：
-/// - 6个可勾选框（5个时段+正常上班）
-/// - 8秒倒计时
-/// - 正常上班=8-20四段，自选≥2段
+/// 正常上班=8-20四段，自选≥2段
 /// </summary>
 public class TimeSelectionUI : MonoBehaviour
 {
@@ -18,15 +15,11 @@ public class TimeSelectionUI : MonoBehaviour
     [SerializeField] private Toggle[] timeToggles;      // 5个时段Toggle
     [SerializeField] private Toggle normalWorkToggle;    // 正常上班Toggle
     [SerializeField] private Button confirmButton;
-    [SerializeField] private TextMeshProUGUI countdownText;
     [SerializeField] private TextMeshProUGUI hintText;
 
     [Header("配置")]
-    [SerializeField] private float countdownTime = 8f;
     [SerializeField] private int minSelections = 2;
 
-    private float currentCountdown;
-    private bool isSelecting;
     private System.Action<List<TimeSegment>> onSelectionComplete;
 
     private void Start()
@@ -58,32 +51,12 @@ public class TimeSelectionUI : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        if (!isSelecting) return;
-
-        // 用 unscaledDeltaTime，不受 timeScale 影响（游戏暂停时倒计时继续）
-        currentCountdown -= Time.unscaledDeltaTime;
-
-        if (countdownText != null)
-        {
-            countdownText.text = $"剩余时间: {Mathf.CeilToInt(currentCountdown)}秒";
-        }
-
-        if (currentCountdown <= 0)
-        {
-            OnTimeUp();
-        }
-    }
-
     /// <summary>
     /// 打开时间选择界面
     /// </summary>
     public void OpenSelection(System.Action<List<TimeSegment>> callback)
     {
         onSelectionComplete = callback;
-        isSelecting = true;
-        currentCountdown = countdownTime;
 
         // 重置所有Toggle
         ResetToggles();
@@ -201,8 +174,6 @@ public class TimeSelectionUI : MonoBehaviour
         if (selectedSegments.Count >= minSelections ||
             (normalWorkToggle != null && normalWorkToggle.isOn))
         {
-            isSelecting = false;
-
             if (selectionPanel != null)
             {
                 selectionPanel.SetActive(false);
@@ -210,17 +181,6 @@ public class TimeSelectionUI : MonoBehaviour
 
             onSelectionComplete?.Invoke(selectedSegments);
         }
-    }
-
-    private void OnTimeUp()
-    {
-        // 时间到，自动选择正常上班
-        if (normalWorkToggle != null)
-        {
-            normalWorkToggle.isOn = true;
-        }
-
-        OnConfirmClicked();
     }
 
     private List<TimeSegment> GetSelectedSegments()
