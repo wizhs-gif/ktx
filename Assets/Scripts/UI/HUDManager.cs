@@ -11,12 +11,8 @@ public class HUDManager : MonoBehaviour
     public static HUDManager Instance { get; private set; }
 
     [Header("精神值显示")]
-    [SerializeField] private Image[] sanityIcons;          // 精神值图标数组（6个）
-    [SerializeField] private Color sanityActiveColor = Color.white;
-    [SerializeField] private Color sanityInactiveColor = Color.gray;
-    [SerializeField] private Sprite sanityNormalSprite;    // 正常精神值图标
-    [SerializeField] private Sprite sanityWarningSprite;   // 警告精神值图标
-    [SerializeField] private Sprite sanityDangerSprite;    // 危险精神值图标
+    [SerializeField] private Image[] sanityBorders;        // 屏幕边缘遮罩（6个，从外到内）
+    [SerializeField] private NoiseOverlay noiseOverlay;    // 噪点覆盖层
 
     [Header("金钱显示")]
     [SerializeField] private TextMeshProUGUI moneyText;
@@ -26,17 +22,6 @@ public class HUDManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI dateText;      // 日期文本
     [SerializeField] private TextMeshProUGUI timeText;      // 时间段文本
     [SerializeField] private Image timeIcon;                // 时间图标
-
-    [Header("地图名称")]
-    [SerializeField] private TextMeshProUGUI mapNameText;
-
-    [Header("精神值颜色配置")]
-    [SerializeField] private Color sanityLevel0Color = Color.red;      // 0档：最危险
-    [SerializeField] private Color sanityLevel1Color = new Color(1f, 0.3f, 0f); // 1档
-    [SerializeField] private Color sanityLevel2Color = new Color(1f, 0.6f, 0f); // 2档
-    [SerializeField] private Color sanityLevel3Color = Color.yellow;   // 3档：正常
-    [SerializeField] private Color sanityLevel4Color = Color.green;    // 4档
-    [SerializeField] private Color sanityLevel5Color = Color.cyan;     // 5档：最佳
 
     private void Awake()
     {
@@ -98,44 +83,29 @@ public class HUDManager : MonoBehaviour
 
     private void UpdateSanityDisplay(int sanity)
     {
-        if (sanityIcons == null || sanityIcons.Length == 0) return;
-
-        // 更新图标状态
-        for (int i = 0; i < sanityIcons.Length; i++)
+        // 更新屏幕边缘遮罩：element0 始终显示，精神值越低遮罩越多
+        // sanity=5 → 只有 element0, sanity=0 → 6个全满
+        if (sanityBorders != null)
         {
-            if (sanityIcons[i] == null) continue;
-
-            bool isActive = i < sanity;
-            sanityIcons[i].color = isActive ? sanityActiveColor : sanityInactiveColor;
-
-            // 根据精神值等级切换图标
-            if (isActive)
+            for (int i = 0; i < sanityBorders.Length; i++)
             {
-                if (sanity <= 1 && sanityDangerSprite != null)
-                    sanityIcons[i].sprite = sanityDangerSprite;
-                else if (sanity <= 2 && sanityWarningSprite != null)
-                    sanityIcons[i].sprite = sanityWarningSprite;
-                else if (sanityNormalSprite != null)
-                    sanityIcons[i].sprite = sanityNormalSprite;
+                if (sanityBorders[i] == null) continue;
+
+                // element0 始终显示，其余随精神值降低逐个出现
+                // element[i] 在 sanity <= (SANITY_MAX - i) 时显示
+                bool shouldShow = i == 0 || sanity <= (GameDataManager.SANITY_MAX - i);
+
+                Color c = sanityBorders[i].color;
+                c.a = shouldShow ? 1f : 0f;
+                sanityBorders[i].color = c;
             }
         }
 
-        // 更新整体颜色提示（可选：背景色变化等）
-        Color targetColor = GetSanityColor(sanity);
-        // 这里可以添加额外的视觉反馈
-    }
-
-    private Color GetSanityColor(int sanity)
-    {
-        switch (sanity)
+        // 更新噪点覆盖：精神值越低，噪点越明显
+        if (noiseOverlay != null)
         {
-            case 0: return sanityLevel0Color;
-            case 1: return sanityLevel1Color;
-            case 2: return sanityLevel2Color;
-            case 3: return sanityLevel3Color;
-            case 4: return sanityLevel4Color;
-            case 5: return sanityLevel5Color;
-            default: return Color.white;
+            float t = 1f - (float)sanity / GameDataManager.SANITY_MAX; // 0→1, sanity越高t越低
+            noiseOverlay.SetIntensity(t);
         }
     }
 
@@ -207,16 +177,4 @@ public class HUDManager : MonoBehaviour
         }
     }
 
-    // ==================== 地图名称 ====================
-
-    /// <summary>
-    /// 设置当前地图名称
-    /// </summary>
-    public void SetMapName(string mapName)
-    {
-        if (mapNameText != null)
-        {
-            mapNameText.text = mapName;
-        }
-    }
 }

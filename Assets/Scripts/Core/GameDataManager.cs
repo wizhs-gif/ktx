@@ -11,7 +11,7 @@ public class GameDataManager : MonoBehaviour
 
     // ==================== 精神值系统 ====================
     [Header("精神值")]
-    [SerializeField] private int sanity = 3; // 默认值3（中间档）
+    [SerializeField] private int sanity = 5; // 初始满值（正常状态）
     public int Sanity => sanity;
     public const int SANITY_MIN = 0;
     public const int SANITY_MAX = 5;
@@ -274,7 +274,7 @@ public class GameDataManager : MonoBehaviour
     /// </summary>
     public void ResetAllData()
     {
-        sanity = 3;
+        sanity = SANITY_MAX;
         money = 0;
         currentDay = 1;
         ownedItems.Clear();

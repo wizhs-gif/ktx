@@ -6,15 +6,33 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Start.unity
+    guid: 460260f65f4c43e448b84abd66c0e833
+  - enabled: 1
     path: Assets/Scenes/SubWay.unity
     guid: 43b9c9576ee2c5e47a20b36fc183cbfe
   - enabled: 1
     path: Assets/Scenes/XiTai.unity
-    guid: 79969f6341e97e44eb5c4c8e55ff18ad
-  - enabled: 1
+    guid: 707dd93075afd6f4482b3fd803e70e57
+  - enabled: 0
     path: Assets/Scenes/DoTween.unity
     guid: 89ff9842964366847bcb0bf84a947ab7
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/Home.unity
+    guid: 148bb23dda56f1b47bf4b83c1883aceb
+  - enabled: 1
+    path: Assets/Scenes/Hospital.unity
+    guid: ee4d61577a3f42e428677eedd7482067
+  - enabled: 1
+    path: Assets/Scenes/OfficeBuilding.unity
+    guid: 58d851cc5334cf5418679393a9f62db1
+  - enabled: 1
+    path: Assets/Scenes/ResidentialComplex.unity
+    guid: 2a16a3b4c31bbbd43a233fac089c6462
+  - enabled: 1
+    path: Assets/Scenes/Square.unity
+    guid: 4abdd9b4be9994a45ae06eec092b7f00
   m_configObjects: {}
